@@ -15,12 +15,49 @@ const gameController = (function(){
         ["","",""],
         ["","",""]
     ];
-    const player1 = createPlayer("Player 1", "X");
-    const player2 = createPlayer("Player 2", "O");
-    let currentPlayer = player1;
+
+    let player1;
+    let player2;
+    let currentPlayer;
+
+    const cacheDOM = (function(){
+        const gameBoardContainer = document.getElementById("game-board");
+
+        return {
+            gameBoardContainer,
+        }
+    })()
+
+    function generateGameBoardCells(){
+        for (let y = 0; y < gameBoard.length; y++) {
+            for (let x = 0; x < gameBoard[y].length; x++) {
+                let gameBoardCell = document.createElement("div");
+                gameBoardCell.classList.add("game-board-cell");
+                gameBoardCell.dataset.x = x;
+                gameBoardCell.dataset.y = y;
+                cacheDOM.gameBoardContainer.appendChild(gameBoardCell);
+            }      
+        }
+    }
+
+    function init(){
+        player1 = createPlayer("Player 1", "X");
+        player2 = createPlayer("Player 2", "O");
+        currentPlayer = player1;
+        generateGameBoardCells();
+    }
     
     function render(){
         // render symbols to gameboard cells
+        for (let y = 0; y < gameBoard.length; y++) {
+            for (let x = 0; x < gameBoard[y].length; x++) {
+                console.log(`[data-x="${x}"][data-y="${y}]"`);
+                let cell = cacheDOM.gameBoardContainer.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+
+                if(cell)
+                    cell.textContent = gameBoard[y][x];
+            }      
+        }    
     }
 
     function bindEvents(){
@@ -62,7 +99,7 @@ const gameController = (function(){
 
         // check each column
         for (let x = 0; x < gameBoard.length; x++) {
-            for (let y = 0; y < gameBoard[x].length; y++) {
+            for (let y = 0; x < gameBoard[x].length; y++) {
                 if(y == 0 && gameBoard[x][y] !== ""){
                     count++;
                     lastSymbol = gameBoard[x][y];
@@ -105,7 +142,7 @@ const gameController = (function(){
         count = 0;
 
         for (let x = gameBoard.length-1, y = 0; x >= 0; x--, y++) {
-            if(x == gameBoard.length-1 && gameBoard[x][y] !== ""){
+            if(x == gameBoard.length-1 && gameBoard[y][x] !== ""){
                 count++;
                 lastSymbol = gameBoard[x][y];
             }
@@ -131,18 +168,19 @@ const gameController = (function(){
         if(xCoord >= 3 || yCoord >= 3 || xCoord < 0 || yCoord < 0)
             throw new Error("Invalid coordinates!");
         
-        if(gameBoard[xCoord][yCoord] !== "")
+        if(gameBoard[yCoord][xCoord] !== "")
             return;
 
-        gameBoard[xCoord][yCoord] = currentPlayer.getSymbol();
+        gameBoard[yCoord][xCoord] = currentPlayer.getSymbol();
         console.log(gameBoard[0]);
         console.log(gameBoard[1]);
         console.log(gameBoard[2]);
 
         render();
 
-        if(checkIfGameWon()){
-            console.log("Game ended!");
+        let winningSymbol = checkIfGameWon();
+        if(winningSymbol !== ""){
+            console.log("Game ended! " + winningSymbol + " won");
             // stop taking input from players
             // display a new game button
         }
@@ -152,9 +190,16 @@ const gameController = (function(){
 
     const restartGame = () => {
         // clear array
-        gameBoard.forEach(item => item = "");
+        for (let y = 0; y < gameBoard.length; y++) {
+            for (let x = 0; x < gameBoard[y].length; x++) {
+                gameBoard[x][y] = "";
+            }      
+        }
+        currentPlayer = player1;
         render();
     }
+
+    init();
 
     return {
         placeSymbol,
