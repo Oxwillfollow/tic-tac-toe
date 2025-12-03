@@ -16,15 +16,20 @@ const gameController = (function(){
         ["","",""]
     ];
 
+    const gameBoardCells = [];
+
     let player1;
     let player2;
     let currentPlayer;
+    let gameEnded = false;
 
     const cacheDOM = (function(){
         const gameBoardContainer = document.getElementById("game-board");
+        const newGameBtn = document.getElementById("newGame-btn");
 
         return {
             gameBoardContainer,
+            newGameBtn,
         }
     })()
 
@@ -35,6 +40,7 @@ const gameController = (function(){
                 gameBoardCell.classList.add("game-board-cell");
                 gameBoardCell.dataset.x = x;
                 gameBoardCell.dataset.y = y;
+                gameBoardCells.push(gameBoardCell);
                 cacheDOM.gameBoardContainer.appendChild(gameBoardCell);
             }      
         }
@@ -45,14 +51,14 @@ const gameController = (function(){
         player2 = createPlayer("Player 2", "O");
         currentPlayer = player1;
         generateGameBoardCells();
+        bindEvents();
     }
     
     function render(){
         // render symbols to gameboard cells
         for (let y = 0; y < gameBoard.length; y++) {
             for (let x = 0; x < gameBoard[y].length; x++) {
-                console.log(`[data-x="${x}"][data-y="${y}]"`);
-                let cell = cacheDOM.gameBoardContainer.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                let cell = gameBoardCells.find(cell => cell.getAttribute("data-x") === x.toString() && cell.getAttribute("data-y") === y.toString());
 
                 if(cell)
                     cell.textContent = gameBoard[y][x];
@@ -62,6 +68,11 @@ const gameController = (function(){
 
     function bindEvents(){
         // bind click events to gameboard cells
+        gameBoardCells.forEach(cell => {
+            cell.addEventListener('click', () => placeSymbol(cell.getAttribute("data-x"),cell.getAttribute("data-y")));
+        });
+
+        cacheDOM.newGameBtn.addEventListener('click', () => restartGame());
     }
 
     function switchPlayers(){
@@ -99,7 +110,7 @@ const gameController = (function(){
 
         // check each column
         for (let x = 0; x < gameBoard.length; x++) {
-            for (let y = 0; x < gameBoard[x].length; y++) {
+            for (let y = 0; y < gameBoard[x].length; y++) {
                 if(y == 0 && gameBoard[x][y] !== ""){
                     count++;
                     lastSymbol = gameBoard[x][y];
@@ -121,12 +132,12 @@ const gameController = (function(){
         }
 
         // check two diagonals
-        for (let x = 0, y = 0; x < gameBoard.length; x++, y++) {
-            if(x == 0 && gameBoard[x][y] !== ""){
+        for (let y = 0, x = 0; y < gameBoard.length; y++, x++) {
+            if(y == 0 && gameBoard[y][x] !== ""){
                 count++;
-                lastSymbol = gameBoard[x][y];
+                lastSymbol = gameBoard[y][x];
             }
-            else if(gameBoard[x][y] === lastSymbol)
+            else if(gameBoard[y][x] === lastSymbol)
                 count++;
             else{
                 count = 0;
@@ -141,12 +152,12 @@ const gameController = (function(){
         lastSymbol = "";
         count = 0;
 
-        for (let x = gameBoard.length-1, y = 0; x >= 0; x--, y++) {
-            if(x == gameBoard.length-1 && gameBoard[y][x] !== ""){
+        for (let y = gameBoard.length-1, x = 0; y >= 0; y--, x++) {
+            if(y == gameBoard.length-1 && gameBoard[y][x] !== ""){
                 count++;
-                lastSymbol = gameBoard[x][y];
+                lastSymbol = gameBoard[y][x];
             }
-            else if(gameBoard[x][y] === lastSymbol)
+            else if(gameBoard[y][x] === lastSymbol)
                 count++;
             else{
                 count = 0;
@@ -162,6 +173,9 @@ const gameController = (function(){
     }
     
     const placeSymbol = (xCoord, yCoord) => {
+        if(gameEnded)
+            return;
+
         if(!currentPlayer)
             throw new Error("No player is active!");      
 
@@ -180,6 +194,8 @@ const gameController = (function(){
 
         let winningSymbol = checkIfGameWon();
         if(winningSymbol !== ""){
+            gameEnded = true;
+            cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
             console.log("Game ended! " + winningSymbol + " won");
             // stop taking input from players
             // display a new game button
@@ -196,6 +212,8 @@ const gameController = (function(){
             }      
         }
         currentPlayer = player1;
+        gameEnded = false;
+        cacheDOM.newGameBtn.setAttribute("data-enabled", "false");
         render();
     }
 
