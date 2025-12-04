@@ -1,3 +1,6 @@
+// TO DO
+// Add draw logic. check if board is full after every round
+
 const createPlayer = (name, symbol) => {
     
     const getName = () => name;
@@ -21,15 +24,20 @@ const gameController = (function(){
     let player1;
     let player2;
     let currentPlayer;
-    let gameEnded = false;
+    let winner;
+    let isDraw;
 
     const cacheDOM = (function(){
         const gameBoardContainer = document.getElementById("game-board");
         const newGameBtn = document.getElementById("newGame-btn");
+        const gameNarrationText = document.querySelector(".game-narration");
+        const gamePlayerText = document.querySelector(".game-active-player");
 
         return {
             gameBoardContainer,
             newGameBtn,
+            gameNarrationText,
+            gamePlayerText,
         }
     })()
 
@@ -52,6 +60,7 @@ const gameController = (function(){
         currentPlayer = player1;
         generateGameBoardCells();
         bindEvents();
+        render();
     }
     
     function render(){
@@ -63,7 +72,21 @@ const gameController = (function(){
                 if(cell)
                     cell.textContent = gameBoard[y][x];
             }      
-        }    
+        }
+        
+        cacheDOM.gamePlayerText.textContent = `${currentPlayer.getName()} (${currentPlayer.getSymbol()})`;
+
+        if(winner){
+            cacheDOM.gameNarrationText.textContent = `Game over! ${winner.getName()} (${winner.getSymbol()}) wins!`
+            cacheDOM.gamePlayerText.textContent = "";
+        }
+        else if(isDraw){
+            cacheDOM.gameNarrationText.textContent = `Game over! Draw!`
+            cacheDOM.gamePlayerText.textContent = "";
+        }
+        else{
+            cacheDOM.gameNarrationText.textContent = `Click on an empty square!`
+        }
     }
 
     function bindEvents(){
@@ -81,99 +104,9 @@ const gameController = (function(){
         else
             currentPlayer = player2;
     }
-
-    function checkIfGameWon(){
-        let lastSymbol = "";
-        let count = 0;
-        
-        // check each row
-        for (let y = 0; y < gameBoard.length; y++) {
-            for (let x = 0; x < gameBoard[y].length; x++) {
-                if(x == 0 && gameBoard[x][y] !== ""){
-                    count++;
-                    lastSymbol = gameBoard[x][y];
-                }
-                else if(gameBoard[x][y] === lastSymbol)
-                    count++;
-                else{
-                    count = 0;
-                    lastSymbol = "";
-                }
-            }
-            if(count >= 3){
-                return lastSymbol;
-            }
-
-            lastSymbol = "";
-            count = 0;
-        }
-
-        // check each column
-        for (let x = 0; x < gameBoard.length; x++) {
-            for (let y = 0; y < gameBoard[x].length; y++) {
-                if(y == 0 && gameBoard[x][y] !== ""){
-                    count++;
-                    lastSymbol = gameBoard[x][y];
-                }
-                else if(gameBoard[x][y] === lastSymbol)
-                    count++;
-                else{
-                    count = 0;
-                    lastSymbol = "";
-                }
-            }
-
-            if(count >= 3){
-                return lastSymbol;
-            }
-
-            lastSymbol = "";
-            count = 0;
-        }
-
-        // check two diagonals
-        for (let y = 0, x = 0; y < gameBoard.length; y++, x++) {
-            if(y == 0 && gameBoard[y][x] !== ""){
-                count++;
-                lastSymbol = gameBoard[y][x];
-            }
-            else if(gameBoard[y][x] === lastSymbol)
-                count++;
-            else{
-                count = 0;
-                lastSymbol = "";
-            }
-        }
-
-        if(count >= 3){
-            return lastSymbol;
-        }
-
-        lastSymbol = "";
-        count = 0;
-
-        for (let y = gameBoard.length-1, x = 0; y >= 0; y--, x++) {
-            if(y == gameBoard.length-1 && gameBoard[y][x] !== ""){
-                count++;
-                lastSymbol = gameBoard[y][x];
-            }
-            else if(gameBoard[y][x] === lastSymbol)
-                count++;
-            else{
-                count = 0;
-                lastSymbol = "";
-            }
-        }
-
-        if(count >= 3){
-            return lastSymbol;
-        }
-
-        return "";
-    }
     
     const placeSymbol = (xCoord, yCoord) => {
-        if(gameEnded)
+        if(winner || isDraw)
             return;
 
         if(!currentPlayer)
@@ -190,18 +123,19 @@ const gameController = (function(){
         console.log(gameBoard[1]);
         console.log(gameBoard[2]);
 
-        render();
+        winner = checkIfGameWon(xCoord, yCoord);
+        console.log(winner);
 
-        let winningSymbol = checkIfGameWon();
-        if(winningSymbol !== ""){
-            gameEnded = true;
+        if(winner == currentPlayer){
             cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
-            console.log("Game ended! " + winningSymbol + " won");
             // stop taking input from players
             // display a new game button
+            render();
         }
-
-        switchPlayers();
+        else{
+            switchPlayers();
+            render();
+        }
     }
 
     const restartGame = () => {
@@ -212,9 +146,60 @@ const gameController = (function(){
             }      
         }
         currentPlayer = player1;
-        gameEnded = false;
+        winner = null;
         cacheDOM.newGameBtn.setAttribute("data-enabled", "false");
         render();
+    }
+
+    function checkIfGameWon(xCoord, yCoord){
+        let symbol = currentPlayer.getSymbol();
+        let lineArray = [];
+
+        // horizontal check (on the current row)
+        for (let x = 0; x < gameBoard[yCoord].length; x++) {
+            if(gameBoard[yCoord][x] === symbol)
+                lineArray.push([yCoord][x]);
+        }
+
+        if(lineArray.length >= 3)
+            return currentPlayer;
+        else
+            lineArray.length = 0;
+
+        // vertical check (on the current column)
+        for (let y = 0; y < gameBoard[xCoord].length; y++) {
+            if(gameBoard[y][xCoord] === symbol)
+                lineArray.push([y][xCoord]);
+        }
+
+        if(lineArray.length >= 3)
+            return currentPlayer;
+        else
+            lineArray.length = 0;
+
+        // diagonal check top left -> down right
+        for (let x = 0, y = 0; x < gameBoard[yCoord].length; x++, y++) {
+            if(gameBoard[y][x] === symbol)
+                lineArray.push([yCoord][x]);
+        }
+
+        if(lineArray.length >= 3)
+            return currentPlayer;
+        else
+            lineArray.length = 0;
+
+        // diagonal check top right -> down left
+        for (let x = gameBoard[yCoord].length-1, y = 0; x >= 0; x--, y++) {
+            if(gameBoard[y][x] === symbol)
+                lineArray.push([yCoord][x]);
+        }
+
+        if(lineArray.length >= 3)
+            return currentPlayer;
+        else
+            lineArray.length = 0;
+
+        return null;
     }
 
     init();
@@ -224,14 +209,3 @@ const gameController = (function(){
         restartGame
     }
 })();
-
-
-
-
-
-
-
-// players have symbols
-// gameboard stores symbols
-// every time a symbol is placed, check if 3 symbols are in a straight line or diagonal
-// if yes, check which player has the symbol

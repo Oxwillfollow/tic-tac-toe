@@ -51,3 +51,7 @@ body {
 button {
     cursor: pointer;
 }
+
+p {
+    color: white;
+}
