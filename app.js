@@ -138,14 +138,13 @@ const gameController = (function(){
         gameBoard[yCoord][xCoord] = currentPlayer.getSymbol();
         roundCount++;
 
-        if(roundCount >= cellCount){
-            render();
-            return;
-        }
-
         winningLine = checkForWinningLine(xCoord, yCoord);
         if(winningLine.length > 0){
             winner = currentPlayer;
+        }
+        else if(roundCount >= cellCount){
+            render();
+            return;
         }
         else{
             switchPlayers();
