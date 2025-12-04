@@ -1,6 +1,3 @@
-// TO DO
-// Add draw logic. check if board is full after every round
-
 const createPlayer = (name, symbol) => {
     
     const getName = () => name;
