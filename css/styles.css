@@ -4,6 +4,8 @@
 
 body {
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-container {
@@ -52,6 +54,22 @@ button {
     cursor: pointer;
 }
 
+h1 {
+    text-align:  center;
+    background-color: #ffe0b2;
+    -webkit-box-shadow: inset 0px 0px 40px 5px #000000; 
+    box-shadow: inset 0px 0px 40px 5px #000000;
+    display: block;
+    margin: 0;
+    padding: 32px;
+}
+
+.game-text-container {
+    height: 100px;
+}
+
 p {
     color: white;
+    font-size: 18px;
+    text-align: center;
 }

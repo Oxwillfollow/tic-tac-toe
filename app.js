@@ -18,14 +18,13 @@ const gameController = (function(){
         ["","",""],
         ["","",""]
     ];
-
     const gameBoardCells = [];
-
+    const cellCount = gameBoard.flat().length;
+    let roundCount = 0;
     let player1;
     let player2;
     let currentPlayer;
     let winner;
-    let isDraw;
 
     const cacheDOM = (function(){
         const gameBoardContainer = document.getElementById("game-board");
@@ -79,10 +78,12 @@ const gameController = (function(){
         if(winner){
             cacheDOM.gameNarrationText.textContent = `Game over! ${winner.getName()} (${winner.getSymbol()}) wins!`
             cacheDOM.gamePlayerText.textContent = "";
+            cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
         }
-        else if(isDraw){
+        else if(roundCount >= cellCount){
             cacheDOM.gameNarrationText.textContent = `Game over! Draw!`
             cacheDOM.gamePlayerText.textContent = "";
+            cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
         }
         else{
             cacheDOM.gameNarrationText.textContent = `Click on an empty square!`
@@ -106,7 +107,7 @@ const gameController = (function(){
     }
     
     const placeSymbol = (xCoord, yCoord) => {
-        if(winner || isDraw)
+        if(winner || roundCount >= cellCount)
             return;
 
         if(!currentPlayer)
@@ -119,23 +120,19 @@ const gameController = (function(){
             return;
 
         gameBoard[yCoord][xCoord] = currentPlayer.getSymbol();
-        console.log(gameBoard[0]);
-        console.log(gameBoard[1]);
-        console.log(gameBoard[2]);
+        roundCount++;
 
-        winner = checkIfGameWon(xCoord, yCoord);
-        console.log(winner);
-
-        if(winner == currentPlayer){
-            cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
-            // stop taking input from players
-            // display a new game button
-            render();
+        if(roundCount >= cellCount){
+            // skip checking for other conditions
+        }
+        else if(winningMove(xCoord, yCoord)){
+            winner = currentPlayer;
         }
         else{
             switchPlayers();
-            render();
         }
+
+        render();
     }
 
     const restartGame = () => {
@@ -147,11 +144,12 @@ const gameController = (function(){
         }
         currentPlayer = player1;
         winner = null;
+        roundCount = 0;
         cacheDOM.newGameBtn.setAttribute("data-enabled", "false");
         render();
     }
 
-    function checkIfGameWon(xCoord, yCoord){
+    function winningMove(xCoord, yCoord){
         let symbol = currentPlayer.getSymbol();
         let lineArray = [];
 
@@ -162,7 +160,7 @@ const gameController = (function(){
         }
 
         if(lineArray.length >= 3)
-            return currentPlayer;
+            return true;
         else
             lineArray.length = 0;
 
@@ -173,7 +171,7 @@ const gameController = (function(){
         }
 
         if(lineArray.length >= 3)
-            return currentPlayer;
+            return true;
         else
             lineArray.length = 0;
 
@@ -184,7 +182,7 @@ const gameController = (function(){
         }
 
         if(lineArray.length >= 3)
-            return currentPlayer;
+            return true;
         else
             lineArray.length = 0;
 
@@ -195,11 +193,11 @@ const gameController = (function(){
         }
 
         if(lineArray.length >= 3)
-            return currentPlayer;
+            return true;
         else
             lineArray.length = 0;
 
-        return null;
+        return false;
     }
 
     init();
