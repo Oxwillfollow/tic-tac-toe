@@ -1,21 +1,28 @@
 * {
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Syncopate, Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Syncopate';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/syncopate-v24-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
 body {
+    background-color: #363636;
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .main-container {
-    background-color: #242424;
     height: 100%;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 16px;
 }
 
@@ -28,52 +35,96 @@ body {
 }
 
 .game-board-cell {
-    background-color: wheat;
+    background-color: rgb(15, 15, 15);
     font-size: 80px;
     font-weight: bold;
-    color: red;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
 }
 
+.game-board-cell:hover {
+    opacity: 75%;
+}
+
 .game-board-cell[data-highlighted="true"] {
-    background-color: #95ff95;
+    background-color: #fff59d;
 }
 
 #newGame-btn{
     visibility: hidden;
-    font-size: 24px;
-    padding: 20px 40px;
-    border: 0;
-    border-radius: 10px;
+    display: block;
+    color: white;
+    background-color: inherit;
+    padding: 8px;
+}
+
+#newGame-btn[data-enabled="true"]:hover{
+    box-shadow: 3px 3px black;
+    transform: translate(-3px, -3px);
+
+    div {
+        transform: rotate(-360deg);
+    }
 }
 
 #newGame-btn[data-enabled="true"] {
     visibility: visible;
+
+    div {
+        transition: 0.35s;
+    }
 }
 
 button {
     cursor: pointer;
 }
 
-h1 {
-    text-align:  center;
-    background-color: #ffe0b2;
-    -webkit-box-shadow: inset 0px 0px 40px 5px #000000; 
-    box-shadow: inset 0px 0px 40px 5px #000000;
-    display: block;
+header {
+    background-color: #fff59d;
     margin: 0;
     padding: 32px;
 }
 
+h1 {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 12px;
+    font-size: 10px;
+    color: lightgray;
+
+    a {
+        color: white;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    a:hover {
+        text-shadow: 1px 1px #ff6969ff;
+    }
+}
+
 .game-text-container {
-    height: 100px;
+    padding: 16px;
+    margin-top: 32px;
 }
 
 p {
     color: white;
     font-size: 18px;
     text-align: center;
+    padding: 8px;
+    margin: 0;
+}
+
+p.game-active-player {
+    font-weight: bold;
 }

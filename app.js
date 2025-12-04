@@ -57,7 +57,7 @@ const gameController = (function(){
 
     function init(){
         player1 = createPlayer("Player 1", "X");
-        player2 = createPlayer("Player 2", "O");
+        player2 = createPlayer("Player 2", "0");
         currentPlayer = player1;
         generateGameBoardCells();
         bindEvents();
@@ -70,28 +70,38 @@ const gameController = (function(){
             for (let x = 0; x < gameBoard[y].length; x++) {
                 let cell = gameBoardCells.find(cell => cell.getAttribute("data-x") === x.toString() && cell.getAttribute("data-y") === y.toString());
 
-                if(cell)
+                if(cell){
                     cell.textContent = gameBoard[y][x];
+
+                    if(gameBoard[y][x] === player1.getSymbol())
+                        cell.style.color = "#ff6969ff";
+                    else
+                        cell.style.color = "#3079e6ff";
+                }
+
+                if(currentPlayer == player1)
+                    cacheDOM.gamePlayerText.style.color = "#ff6969ff";
+                else
+                    cacheDOM.gamePlayerText.style.color = "#3079e6ff";
             }      
         }
         
         cacheDOM.gamePlayerText.textContent = `${currentPlayer.getName()} (${currentPlayer.getSymbol()})`;
 
         if(winner){
-            cacheDOM.gameNarrationText.textContent = `Game over! ${winner.getName()} (${winner.getSymbol()}) wins!`
-            cacheDOM.gamePlayerText.textContent = "";
+            cacheDOM.gamePlayerText.textContent = `${winner.getName()} (${winner.getSymbol()}) wins!`
+            cacheDOM.gameNarrationText.textContent = `Game over.`;
             cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
 
             // Highlight winning line
             winningLine.forEach((winningCell, i) => {
                 let highlightedCell = gameBoardCells.find(cell => cell.getAttribute("data-x") === winningCell[1].toString() && cell.getAttribute("data-y") === winningCell[0].toString());
                 highlightedCell.setAttribute("data-highlighted", "true");
-                console.log(highlightedCell);
             })
         }
         else if(roundCount >= cellCount){
-            cacheDOM.gameNarrationText.textContent = `Game over! Draw!`
-            cacheDOM.gamePlayerText.textContent = "";
+            cacheDOM.gamePlayerText.textContent = "Draw.";
+            cacheDOM.gameNarrationText.textContent = `Try again?`
             cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
         }
         else{
@@ -156,6 +166,7 @@ const gameController = (function(){
         }
         currentPlayer = player1;
         winner = null;
+        winningLine.length = 0;
         roundCount = 0;
         cacheDOM.newGameBtn.setAttribute("data-enabled", "false");
         gameBoardCells.forEach(cell => cell.setAttribute("data-highlighted", "false"));
