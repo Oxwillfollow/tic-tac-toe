@@ -25,6 +25,7 @@ const gameController = (function(){
     let player2;
     let currentPlayer;
     let winner;
+    let winningLine = [];
 
     const cacheDOM = (function(){
         const gameBoardContainer = document.getElementById("game-board");
@@ -47,6 +48,7 @@ const gameController = (function(){
                 gameBoardCell.classList.add("game-board-cell");
                 gameBoardCell.dataset.x = x;
                 gameBoardCell.dataset.y = y;
+                gameBoardCell.dataset.highlighted = "false";
                 gameBoardCells.push(gameBoardCell);
                 cacheDOM.gameBoardContainer.appendChild(gameBoardCell);
             }      
@@ -79,6 +81,13 @@ const gameController = (function(){
             cacheDOM.gameNarrationText.textContent = `Game over! ${winner.getName()} (${winner.getSymbol()}) wins!`
             cacheDOM.gamePlayerText.textContent = "";
             cacheDOM.newGameBtn.setAttribute("data-enabled", "true");
+
+            // Highlight winning line
+            winningLine.forEach((winningCell, i) => {
+                let highlightedCell = gameBoardCells.find(cell => cell.getAttribute("data-x") === winningCell[1].toString() && cell.getAttribute("data-y") === winningCell[0].toString());
+                highlightedCell.setAttribute("data-highlighted", "true");
+                console.log(highlightedCell);
+            })
         }
         else if(roundCount >= cellCount){
             cacheDOM.gameNarrationText.textContent = `Game over! Draw!`
@@ -93,7 +102,7 @@ const gameController = (function(){
     function bindEvents(){
         // bind click events to gameboard cells
         gameBoardCells.forEach(cell => {
-            cell.addEventListener('click', () => placeSymbol(cell.getAttribute("data-x"),cell.getAttribute("data-y")));
+            cell.addEventListener('click', () => placeSymbol(cell.getAttribute("data-y"),cell.getAttribute("data-x")));
         });
 
         cacheDOM.newGameBtn.addEventListener('click', () => restartGame());
@@ -106,7 +115,7 @@ const gameController = (function(){
             currentPlayer = player2;
     }
     
-    const placeSymbol = (xCoord, yCoord) => {
+    const placeSymbol = (yCoord, xCoord) => {
         if(winner || roundCount >= cellCount)
             return;
 
@@ -123,9 +132,12 @@ const gameController = (function(){
         roundCount++;
 
         if(roundCount >= cellCount){
-            // skip checking for other conditions
+            render();
+            return;
         }
-        else if(winningMove(xCoord, yCoord)){
+
+        winningLine = checkForWinningLine(xCoord, yCoord);
+        if(winningLine.length > 0){
             winner = currentPlayer;
         }
         else{
@@ -146,58 +158,59 @@ const gameController = (function(){
         winner = null;
         roundCount = 0;
         cacheDOM.newGameBtn.setAttribute("data-enabled", "false");
+        gameBoardCells.forEach(cell => cell.setAttribute("data-highlighted", "false"));
         render();
     }
 
-    function winningMove(xCoord, yCoord){
+    function checkForWinningLine(xCoord, yCoord){
         let symbol = currentPlayer.getSymbol();
         let lineArray = [];
 
         // horizontal check (on the current row)
         for (let x = 0; x < gameBoard[yCoord].length; x++) {
             if(gameBoard[yCoord][x] === symbol)
-                lineArray.push([yCoord][x]);
+                lineArray.push([yCoord, x]);
         }
 
         if(lineArray.length >= 3)
-            return true;
+            return lineArray;
         else
             lineArray.length = 0;
 
         // vertical check (on the current column)
         for (let y = 0; y < gameBoard[xCoord].length; y++) {
             if(gameBoard[y][xCoord] === symbol)
-                lineArray.push([y][xCoord]);
+                lineArray.push([y, xCoord]);
         }
 
         if(lineArray.length >= 3)
-            return true;
+            return lineArray;
         else
             lineArray.length = 0;
 
         // diagonal check top left -> down right
         for (let x = 0, y = 0; x < gameBoard[yCoord].length; x++, y++) {
             if(gameBoard[y][x] === symbol)
-                lineArray.push([yCoord][x]);
+                lineArray.push([y, x]);
         }
 
         if(lineArray.length >= 3)
-            return true;
+            return lineArray;
         else
             lineArray.length = 0;
 
         // diagonal check top right -> down left
         for (let x = gameBoard[yCoord].length-1, y = 0; x >= 0; x--, y++) {
             if(gameBoard[y][x] === symbol)
-                lineArray.push([yCoord][x]);
+                lineArray.push([y, x]);
         }
 
         if(lineArray.length >= 3)
-            return true;
+            return lineArray;
         else
             lineArray.length = 0;
 
-        return false;
+        return [];
     }
 
     init();

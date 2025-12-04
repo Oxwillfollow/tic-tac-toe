@@ -38,6 +38,10 @@ body {
     cursor: pointer;
 }
 
+.game-board-cell[data-highlighted="true"] {
+    background-color: #95ff95;
+}
+
 #newGame-btn{
     visibility: hidden;
     font-size: 24px;
