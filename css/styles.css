@@ -11,19 +11,20 @@
 }
 
 body {
-    background-color: #363636;
+    background-color: #222222;
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .main-container {
+    background-image: url(../images/background.jpg);
     height: 100%;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
 }
 
 #game-board {
@@ -35,7 +36,7 @@ body {
 }
 
 .game-board-cell {
-    background-color: rgb(15, 15, 15);
+    background-color: #161616;
     font-size: 80px;
     font-weight: bold;
     display: flex;
@@ -45,7 +46,7 @@ body {
 }
 
 .game-board-cell:hover {
-    opacity: 75%;
+    opacity: 85%;
 }
 
 .game-board-cell[data-highlighted="true"] {
@@ -56,8 +57,8 @@ body {
     visibility: hidden;
     display: block;
     color: white;
-    background-color: inherit;
     padding: 8px;
+    background-color: #222222;
 }
 
 #newGame-btn[data-enabled="true"]:hover{
@@ -115,6 +116,8 @@ footer {
 .game-text-container {
     padding: 16px;
     margin-top: 32px;
+    background-color: #222222;
+    border-radius: 20px;
 }
 
 p {
